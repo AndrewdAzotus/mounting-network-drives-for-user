@@ -1,0 +1,1 @@
+sudo mount //{file-server}/{share-name} /home/{user-name}/shr -o credentials=/home/{user-name}/.smb.cred,_netdev,vers=1.0
