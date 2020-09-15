@@ -1,0 +1,10 @@
+#!/usr/bin/python3
+import os
+
+homeFldrs = os.listdir("/home")
+homeFldrs.sort()
+
+for homeFldr in homeFldrs:
+  if (os.path.exists("/home/{}/.mount".format(homeFldr))):
+    print("home Mounts for {}".format(homeFldr))
+    os.system("/home/{}/.mount".format(homeFldr))
