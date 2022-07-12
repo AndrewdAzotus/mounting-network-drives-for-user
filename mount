@@ -1,1 +1,42 @@
-sudo mount //{file-server}/{share-name} /home/{user-name}/shr -o credentials=/home/{user-name}/.smb.cred,_netdev,vers=1.0
+#!/bin/bash
+
+# this next line is the old version
+# sudo mount //{file-server}/{share-name} /home/{user-name}/shr -o credentials=/home/{user-name}/.smb.cred,_netdev,vers=1.0
+# it has been updated to be a little smarter:
+
+function mnt {
+
+  echo "${1:2:5}"
+
+  if [ -d "/home/$2/$3" ]
+  then
+    echo "$3 exists"
+    if mountpoint -q /home/$2/$3
+    then
+      echo "$3 already mounted"
+    else
+      echo "mounting $3"
+      if [ "${1:2:5}" = "idris" ]
+      then
+        # leaves all permissions as root root
+        #sudo mount $1 /home/$2/$3 -t cifs -o credentials=/home/$2/.smb.cred,_netdev
+        sudo mount $1 /home/$2/$3 -t cifs -o credentials=/home/$2/.smb.cred #,vers=2.0
+      else
+        # works for buster only:
+        sudo mount $1 /home/$2/$3 -t cifs -o credentials=/home/$2/.smb.cred,_netdev,vers=1.0
+      fi
+      # uid overrides everything :(
+      # sudo mount $1 /home/$2/$3 -t cifs -o credentials=/home/$2/.smb.cred,_netdev,uid=$2,gid=family
+    fi
+  else
+    echo "$3 does not exist for $2"
+  fi
+}
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+usrName=${DIR:6}
+
+# <file-server-name> is the name of your file server [only tested with Samba, but NFS or windows share should work too],
+# <file-share>       is a disk share on that file server
+# <folder-name>      is a folder in the user's home folder
+mnt //<file-server-name>/<file-share>           $usrName <folder-name>
