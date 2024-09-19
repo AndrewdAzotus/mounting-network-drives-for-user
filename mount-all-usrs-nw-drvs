@@ -1,0 +1,46 @@
+#!/bin/bash
+
+function mnt {
+  # echo "Srvr: ${1:2:5}"
+  if [ -d "/home/$2/$3" ]
+  then
+    # echo "$3 exists"
+    if [ "$4" == "refresh" ]
+    then
+      sudo umount -v /home/$2/$3
+    fi
+    if mountpoint -q /home/$2/$3
+    then
+      echo "/home/$2/$3 already mounted"
+    else
+      echo "mounting $3"
+      echo mount $1 /home/$2/$3 -t cifs -o credentials=/home/$2/.smb.cred,_netdev,uid=$2,gid=family
+      sudo mount $1 /home/$2/$3 -t cifs -o credentials=/home/$2/.smb.cred,_netdev,uid=$2,gid=family
+    fi
+  else
+    echo "$2 does not have $3"
+  fi
+}
+
+#-- yes, this is an odd way to get the userid, but it allows
+#-- the script to be run by root for each user at machine start
+#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+#usrName=${DIR:6}
+
+# can be called with optional parm of refresh to umount drvs before mounting
+# looping through all users to run from /usr/local/bin
+for usrPath in /home/*
+do
+  echo $usrPath
+  usrName=${usrPath:6}
+  mnt //gibberd/Archive		$usrName arc		$1
+  mnt //gibberd/Backups		$usrName bkp		$1
+  mnt //fenchurch/Library	$usrName lib		$1
+  mnt //gibberd/OldFiles	$usrName old		$1
+  mnt //fenchurch/Reference	$usrName ref		$1
+  mnt //fenchurch/SharedRW	$usrName shr		$1
+  mnt //fenchurch/SharedRW	$usrName shr-fch	$1
+  mnt //gibberd/SharedRW	$usrName shr-gbd	$1
+  mnt //gibberd/$usrName	$usrName xHome		$1
+  mnt //fenchurch/$usrName	$usrName yHome		$1
+done
